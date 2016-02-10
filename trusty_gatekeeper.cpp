@@ -262,7 +262,7 @@ bool TrustyGateKeeper::WriteSecureFailureRecord(uint32_t uid, failure_record_t *
     snprintf(id, STORAGE_ID_LENGTH_MAX, GATEKEEPER_PREFIX "%u", uid);
 
     file_handle_t handle;
-    rc = storage_open_file(session, &handle, id, STORAGE_OPEN_CREATE);
+    rc = storage_open_file(session, &handle, id, STORAGE_FILE_OPEN_CREATE);
     if (rc < 0) {
         TLOGE("Error: [%d] failed to open storage object %s\n", rc, id);
         return false;
