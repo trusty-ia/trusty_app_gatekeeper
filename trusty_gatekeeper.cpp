@@ -127,14 +127,14 @@ bool TrustyGateKeeper::GetAuthTokenKey(const uint8_t **auth_token_key,
     keymaster_session_t session = (keymaster_session_t) rc;
 
     uint8_t *key = NULL;
-	uint32_t local_length = 0;
+    uint32_t local_length = 0;
 
     rc = keymaster_get_auth_token_key(session, &key, &local_length);
     keymaster_close(session);
 
     if (rc == NO_ERROR) {
         *auth_token_key = key;
-		*length = local_length;
+        *length = local_length;
         return true;
     } else {
         return false;
@@ -189,7 +189,7 @@ uint64_t TrustyGateKeeper::GetMillisecondsSinceBoot() const {
 bool TrustyGateKeeper::GetSecureFailureRecord(uint32_t uid, secure_id_t user_id,
         failure_record_t *record) {
 
-	storage_session_t session;
+    storage_session_t session;
     int rc = storage_open_session(&session);
     if (rc < 0) {
         TLOGE("Error: [%d] opening storage session\n", rc);
@@ -199,7 +199,7 @@ bool TrustyGateKeeper::GetSecureFailureRecord(uint32_t uid, secure_id_t user_id,
     char id[STORAGE_ID_LENGTH_MAX];
     memset(id, 0, sizeof(id));
 
-	file_handle_t handle;
+    file_handle_t handle;
     snprintf(id, STORAGE_ID_LENGTH_MAX, GATEKEEPER_PREFIX "%u", uid);
     rc = storage_open_file(session, &handle, id, 0);
     if (rc < 0) {
@@ -250,7 +250,7 @@ bool TrustyGateKeeper::ClearFailureRecord(uint32_t uid, secure_id_t user_id, boo
 }
 
 bool TrustyGateKeeper::WriteSecureFailureRecord(uint32_t uid, failure_record_t *record) {
-	storage_session_t session;
+    storage_session_t session;
     long rc = storage_open_session(&session);
     if (rc < 0) {
         TLOGE("Error: [%d] failed to open storage session\n", rc);
@@ -261,7 +261,7 @@ bool TrustyGateKeeper::WriteSecureFailureRecord(uint32_t uid, failure_record_t *
     memset(id, 0, sizeof(id));
     snprintf(id, STORAGE_ID_LENGTH_MAX, GATEKEEPER_PREFIX "%u", uid);
 
-	file_handle_t handle;
+    file_handle_t handle;
     rc = storage_open_file(session, &handle, id, STORAGE_OPEN_CREATE);
     if (rc < 0) {
         TLOGE("Error: [%d] failed to open storage object %s\n", rc, id);
