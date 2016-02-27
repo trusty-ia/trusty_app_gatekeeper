@@ -190,7 +190,7 @@ bool TrustyGateKeeper::GetSecureFailureRecord(uint32_t uid, secure_id_t user_id,
         failure_record_t *record) {
 
     storage_session_t session;
-    int rc = storage_open_session(&session);
+    int rc = storage_open_session(&session, STORAGE_CLIENT_TD_PORT);
     if (rc < 0) {
         TLOGE("Error: [%d] opening storage session\n", rc);
         return false;
@@ -251,7 +251,7 @@ bool TrustyGateKeeper::ClearFailureRecord(uint32_t uid, secure_id_t user_id, boo
 
 bool TrustyGateKeeper::WriteSecureFailureRecord(uint32_t uid, failure_record_t *record) {
     storage_session_t session;
-    long rc = storage_open_session(&session);
+    long rc = storage_open_session(&session, STORAGE_CLIENT_TD_PORT);
     if (rc < 0) {
         TLOGE("Error: [%d] failed to open storage session\n", rc);
         return false;
