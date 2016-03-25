@@ -201,15 +201,16 @@ bool TrustyGateKeeper::GetSecureFailureRecord(uint32_t uid, secure_id_t user_id,
 
     file_handle_t handle;
     snprintf(id, STORAGE_ID_LENGTH_MAX, GATEKEEPER_PREFIX "%u", uid);
-    rc = storage_open_file(session, &handle, id, 0);
+    rc = storage_open_file(session, &handle, id, 0, 0);
     if (rc < 0) {
         TLOGE("Error:[%d] opening storage object.\n", rc);
+        storage_close_session(session);
         return false;
     }
 
     failure_record_t owner_record;
-    rc = storage_read(session, handle, 0, &owner_record, sizeof(owner_record));
-    storage_close_file(session, handle);
+    rc = storage_read(handle, 0, &owner_record, sizeof(owner_record));
+    storage_close_file(handle);
     storage_close_session(session);
 
     if (rc < 0) {
@@ -251,7 +252,7 @@ bool TrustyGateKeeper::ClearFailureRecord(uint32_t uid, secure_id_t user_id, boo
 
 bool TrustyGateKeeper::WriteSecureFailureRecord(uint32_t uid, failure_record_t *record) {
     storage_session_t session;
-    long rc = storage_open_session(&session, STORAGE_CLIENT_TD_PORT);
+    int rc = storage_open_session(&session, STORAGE_CLIENT_TD_PORT);
     if (rc < 0) {
         TLOGE("Error: [%d] failed to open storage session\n", rc);
         return false;
@@ -262,14 +263,15 @@ bool TrustyGateKeeper::WriteSecureFailureRecord(uint32_t uid, failure_record_t *
     snprintf(id, STORAGE_ID_LENGTH_MAX, GATEKEEPER_PREFIX "%u", uid);
 
     file_handle_t handle;
-    rc = storage_open_file(session, &handle, id, STORAGE_FILE_OPEN_CREATE);
+    rc = storage_open_file(session, &handle, id, STORAGE_FILE_OPEN_CREATE, 0);
     if (rc < 0) {
         TLOGE("Error: [%d] failed to open storage object %s\n", rc, id);
+        storage_close_session(session);
         return false;
     }
 
-    rc = storage_write(session, handle, 0, record, sizeof(*record));
-    storage_close_file(session, handle);
+    rc = storage_write(handle, 0, record, sizeof(*record), STORAGE_OP_COMPLETE);
+    storage_close_file(handle);
     storage_close_session(session);
 
     if (rc < 0) {
