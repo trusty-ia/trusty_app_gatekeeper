@@ -131,7 +131,7 @@ static gatekeeper_error_t handle_request(uint32_t cmd, uint8_t *in_buf, uint32_t
 
 static gatekeeper_error_t send_response(handle_t chan,
         uint32_t cmd, uint8_t *out_buf, uint32_t out_buf_size) {
-    struct gatekeeper_message gk_msg = { cmd | GK_RESP_BIT };
+    struct gatekeeper_message gk_msg = { cmd | GK_RESP_BIT, {}};
     iovec_t iov[2] = {
         { &gk_msg, sizeof(gk_msg) },
         { out_buf, out_buf_size },
@@ -143,7 +143,7 @@ static gatekeeper_error_t send_response(handle_t chan,
 
     // fatal error
     if (rc < 0) {
-        TLOGE("failed (%d) to send_msg for chan (%d)\n", rc, chan);
+        TLOGE("failed (%ld) to send_msg for chan (%d)\n", rc, chan);
         return tipc_err_to_gatekeeper_err(rc);
     }
 
@@ -176,7 +176,7 @@ static long handle_msg(handle_t chan) {
 
     // fatal error
     if (rc != NO_ERROR) {
-        TLOGE("failed (%d) to get_msg for chan (%d), closing connection\n",
+        TLOGE("failed (%ld) to get_msg for chan (%d), closing connection\n",
                 rc, chan);
         return rc;
     }
@@ -192,12 +192,13 @@ static long handle_msg(handle_t chan) {
     rc = read_msg(chan, msg_inf.id, 0, &msg);
 
     if (rc < 0) {
-        TLOGE("failed to read msg (%d)\n", rc, chan);
+        TLOGE("failed to read msg (%ld) for chan (%d)\n", rc, chan);
         return rc;
     }
 
-    if(((unsigned long) rc) < sizeof(gatekeeper_message)) {
-        TLOGE("invalid message of size (%d)\n", rc, chan);
+    if(((size_t)rc) < sizeof(gatekeeper_message)) {
+        TLOGE("invalid message of size (%zu) for chan (%d)\n",
+              (size_t)rc, chan);
         return ERROR_INVALID;
     }
 
@@ -211,14 +212,14 @@ static long handle_msg(handle_t chan) {
             msg_inf.len - sizeof(gatekeeper_message), &out_buf, &out_buf_size);
 
     if (rc < 0) {
-        TLOGE("unable (%d) to handle request", rc);
+        TLOGE("unable (%ld) to handle request", rc);
         return send_error_response(chan, gk_msg->cmd, tipc_err_to_gatekeeper_err(rc));
     }
 
     rc = send_response(chan, gk_msg->cmd, out_buf.get(), out_buf_size);
 
     if (rc < 0) {
-        TLOGE("unable (%d) to send response", rc);
+        TLOGE("unable (%ld) to send response", rc);
     }
 
     return rc;
@@ -262,7 +263,7 @@ static void gatekeeper_handle_channel(uevent_t *ev) {
         long rc = handle_msg(chan);
         if (rc != NO_ERROR) {
             /* report an error and close channel */
-            TLOGE("failed (%d) to handle event on channel %d\n", rc, ev->handle);
+            TLOGE("failed (%ld) to handle event on channel %d\n", rc, ev->handle);
             close(chan);
         }
     }
@@ -298,7 +299,7 @@ int main(void) {
 
     rc = gatekeeper_ipc_init();
     if (rc < 0) {
-        TLOGE("failed (%d) to initialize gatekeeper", rc);
+        TLOGE("failed (%ld) to initialize gatekeeper", rc);
         return rc;
     }
 
@@ -312,7 +313,7 @@ int main(void) {
 
         rc = wait_any(&event, -1);
         if (rc < 0) {
-            TLOGE("wait_any failed (%d)\n", rc);
+            TLOGE("wait_any failed (%ld)\n", rc);
             break;
         }
 
