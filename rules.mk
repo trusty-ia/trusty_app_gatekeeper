@@ -14,12 +14,18 @@
 #
 
 LOCAL_DIR := $(GET_LOCAL_DIR)
+ANDROID_ROOT := $(LOCAL_DIR)/../../..
+GATEKEEPER_ROOT := $(ANDROID_ROOT)/system/gatekeeper
 
 MODULE := $(LOCAL_DIR)
 
 MODULE_SRCS += \
 	$(LOCAL_DIR)/manifest.c \
 	$(LOCAL_DIR)/trusty_gatekeeper.cpp \
+	$(GATEKEEPER_ROOT)/gatekeeper_messages.cpp \
+	$(GATEKEEPER_ROOT)/gatekeeper.cpp
+
+MODULES_CPPFLAGS := -std=c++11
 
 IPC := ipc
 
@@ -30,10 +36,13 @@ MODULE_DEPS += \
 	lib/rng \
 	lib/hwkey \
 	lib/storage \
-	lib/keymaster \
-	system/gatekeeper \
+	lib/keymaster
+#	system/gatekeeper \
 
 MODULE_INCLUDES += \
+	$(GATEKEEPER_ROOT)/include \
+	$(GATEKEEPER_ROOT) \
+	$(ANDROID_ROOT)/hardware/libhardware/include \
 	$(LOCAL_DIR)
 
 include $(LOCAL_DIR)/$(IPC)/rules.mk

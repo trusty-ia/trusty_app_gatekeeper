@@ -115,7 +115,7 @@ void TrustyGateKeeper::ClearMasterKey() {
 }
 
 bool TrustyGateKeeper::GetAuthTokenKey(const uint8_t **auth_token_key,
-        size_t *length) const {
+        uint32_t *length) const {
     *length = 0;
     *auth_token_key = NULL;
 
@@ -127,28 +127,28 @@ bool TrustyGateKeeper::GetAuthTokenKey(const uint8_t **auth_token_key,
     keymaster_session_t session = (keymaster_session_t) rc;
 
     uint8_t *key = NULL;
-    uint32_t local_length = 0;
+    size_t local_length = 0;
 
     rc = keymaster_get_auth_token_key(session, &key, &local_length);
     keymaster_close(session);
 
     if (rc == NO_ERROR) {
         *auth_token_key = key;
-        *length = local_length;
+        *length = (uint32_t)local_length;
         return true;
     } else {
         return false;
     }
 }
 
-void TrustyGateKeeper::GetPasswordKey(const uint8_t **password_key, size_t *length) {
+void TrustyGateKeeper::GetPasswordKey(const uint8_t **password_key, uint32_t *length) {
     *password_key = const_cast<const uint8_t *>(master_key_.get());
     *length = HMAC_SHA_256_KEY_SIZE;
 }
 
-void TrustyGateKeeper::ComputePasswordSignature(uint8_t *signature, size_t signature_length,
-        const uint8_t *key, size_t key_length, const uint8_t *password,
-        size_t password_length, salt_t salt) const {
+void TrustyGateKeeper::ComputePasswordSignature(uint8_t *signature, uint32_t signature_length,
+        const uint8_t *key, uint32_t key_length, const uint8_t *password,
+        uint32_t password_length, salt_t salt) const {
     // todo: heap allocate
     uint8_t salted_password[password_length + sizeof(salt)];
     memcpy(salted_password, &salt, sizeof(salt));
@@ -157,19 +157,19 @@ void TrustyGateKeeper::ComputePasswordSignature(uint8_t *signature, size_t signa
             password_length + sizeof(salt));
 }
 
-void TrustyGateKeeper::GetRandom(void *random, size_t requested_size) const {
+void TrustyGateKeeper::GetRandom(void *random, uint32_t requested_size) const {
     if (random == NULL) return;
     trusty_rng_secure_rand(reinterpret_cast<uint8_t*>(random), requested_size);
 }
 
-void TrustyGateKeeper::ComputeSignature(uint8_t *signature, size_t signature_length,
-        const uint8_t *key, size_t key_length, const uint8_t *message,
-        const size_t length) const {
+void TrustyGateKeeper::ComputeSignature(uint8_t *signature, uint32_t signature_length,
+        const uint8_t *key, uint32_t key_length, const uint8_t *message,
+        const uint32_t length) const {
     uint8_t buf[HMAC_SHA_256_KEY_SIZE];
-    size_t buf_len;
+    uint32_t buf_len;
 
     HMAC(EVP_sha256(), key, key_length, message, length, buf, &buf_len);
-    size_t to_write = buf_len;
+    uint32_t to_write = buf_len;
     if (buf_len > signature_length) to_write = signature_length;
     memset(signature, 0, signature_length);
     memcpy(signature, buf, to_write);
@@ -218,7 +218,7 @@ bool TrustyGateKeeper::GetSecureFailureRecord(uint32_t uid, secure_id_t user_id,
         return false;
     }
 
-    if ((size_t) rc < sizeof(owner_record)) {
+    if ((uint32_t) rc < sizeof(owner_record)) {
         TLOGE("Error: invalid object size [%d].\n", rc);
         return false;
     }
@@ -279,7 +279,7 @@ bool TrustyGateKeeper::WriteSecureFailureRecord(uint32_t uid, failure_record_t *
         return false;
     }
 
-    if ((size_t) rc < sizeof(*record)) {
+    if ((uint32_t) rc < sizeof(*record)) {
         TLOGE("Error: invalid object size [%d].\n", rc);
         return false;
     }

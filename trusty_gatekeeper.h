@@ -44,26 +44,30 @@ public:
 protected:
     // See gatekeeper/gatekeeper.h for documentation
 
-    virtual bool GetAuthTokenKey(const uint8_t **auth_token_key, size_t *length) const;
+    bool GetAuthTokenKey(const uint8_t **auth_token_key, uint32_t *length) const override;
 
-    virtual void GetPasswordKey(const uint8_t **password_key, size_t *length);
+    void GetPasswordKey(const uint8_t **password_key, uint32_t *length) override;
 
-    virtual void ComputePasswordSignature(uint8_t *signature, size_t signature_length,
-            const uint8_t *key, size_t key_length, const uint8_t *password,
-            size_t password_length, salt_t salt) const;
+    void ComputePasswordSignature(uint8_t *signature, uint32_t signature_length,
+            const uint8_t *key, uint32_t key_length, const uint8_t *password,
+            uint32_t password_length, salt_t salt) const override;
 
-    virtual void GetRandom(void *random, size_t requested_size) const;
-    virtual void ComputeSignature(uint8_t *signature, size_t signature_length,
-            const uint8_t *key, size_t key_length, const uint8_t *message,
-            const size_t length) const;
-    virtual uint64_t GetMillisecondsSinceBoot() const;
+    void GetRandom(void *random, uint32_t requested_size) const override;
 
-    virtual bool GetFailureRecord(uint32_t uid, secure_id_t user_id, failure_record_t *record,
-            bool secure);
-    virtual bool WriteFailureRecord(uint32_t uid, failure_record_t *record, bool secure);
-    virtual bool ClearFailureRecord(uint32_t uid, secure_id_t user_id, bool secure);
+    void ComputeSignature(uint8_t *signature, uint32_t signature_length,
+            const uint8_t *key, uint32_t key_length, const uint8_t *message,
+            const uint32_t length) const override;
 
-    virtual bool IsHardwareBacked() const;
+    uint64_t GetMillisecondsSinceBoot() const override;
+
+    bool GetFailureRecord(uint32_t uid, secure_id_t user_id, failure_record_t *record,
+            bool secure) override;
+
+    bool WriteFailureRecord(uint32_t uid, failure_record_t *record, bool secure) override;
+
+    bool ClearFailureRecord(uint32_t uid, secure_id_t user_id, bool secure) override;
+
+    bool IsHardwareBacked() const override;
 
 private:
     bool SeedRngIfNeeded();
