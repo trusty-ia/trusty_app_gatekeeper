@@ -19,12 +19,10 @@
 // TODO: generate my own UUID
 trusty_app_manifest_t TRUSTY_APP_MANIFEST_ATTRS trusty_app_manifest =
 {
-
-    /* UUID : {38ba0cdc-df0e-11e4-9869-233fb6ae4795} */
-    { 0x38ba0cdc, 0xdf0e, 0x11e4,
-        { 0x98, 0x69, 0x23, 0x3f, 0xb6, 0xae, 0x47, 0x95 } },
+	.uuid = GATEKEEPER_SRV_APP_UUID,
 
 	/* optional configuration options here */
+	.config_options =
 	{
 		/* openssl need a larger heap */
 		TRUSTY_APP_CONFIG_MIN_HEAP_SIZE(2 * 4096),
