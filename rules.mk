@@ -25,7 +25,7 @@ MODULE_SRCS += \
 	$(GATEKEEPER_ROOT)/gatekeeper_messages.cpp \
 	$(GATEKEEPER_ROOT)/gatekeeper.cpp
 
-MODULES_CPPFLAGS := -std=c++11
+MODULE_CPPFLAGS := -std=c++11
 
 IPC := ipc
 
@@ -37,7 +37,6 @@ MODULE_DEPS += \
 	lib/hwkey \
 	lib/storage \
 	lib/keymaster
-#	system/gatekeeper \
 
 MODULE_INCLUDES += \
 	$(GATEKEEPER_ROOT)/include \
