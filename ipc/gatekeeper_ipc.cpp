@@ -25,7 +25,7 @@ extern "C" {
 #include <trusty_std.h>
 #include <trusty_ipc.h>
 
-#include <err.h>
+#include <uapi/err.h>
 
 #include "trusty_gatekeeper.h"
 #include "gatekeeper_ipc.h"

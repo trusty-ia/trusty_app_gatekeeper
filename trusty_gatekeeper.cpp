@@ -15,7 +15,7 @@
  */
 
 #include <openssl/hmac.h>
-#include <err.h>
+#include <uapi/err.h>
 
 extern "C" {
 #include <lib/hwkey/hwkey.h>
