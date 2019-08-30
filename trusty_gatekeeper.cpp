@@ -43,7 +43,8 @@ namespace gatekeeper {
 
 static const uint8_t DERIVATION_DATA[HMAC_SHA_256_KEY_SIZE] = "TrustyGateKeeperDerivationData0";
 
-TrustyGateKeeper::TrustyGateKeeper() : GateKeeper() {
+TrustyGateKeeper::TrustyGateKeeper() : GateKeeper(),
+    cached_auth_token_key_len_(0) {
     rng_initialized_ = false;
     calls_since_reseed_ = 0;
     num_mem_records_ = 0;
@@ -114,31 +115,42 @@ void TrustyGateKeeper::ClearMasterKey() {
     master_key_.reset();
 }
 
-bool TrustyGateKeeper::GetAuthTokenKey(const uint8_t **auth_token_key,
-        uint32_t *length) const {
+/*
+ * While the GetAuthTokenKey header file says this value cannot be cached,
+ * after consulting with the GK/KM team this is incorrect - this is a per-boot
+ * key, and so in-memory caching is acceptable.
+ */
+bool TrustyGateKeeper::GetAuthTokenKey(const uint8_t** auth_token_key,
+                                       uint32_t* length) const {
     *length = 0;
-    *auth_token_key = NULL;
+    *auth_token_key = nullptr;
 
-    long rc = keymaster_open();
-    if (rc < 0) {
-        return false;
+    if (!cached_auth_token_key_) {
+        long rc = keymaster_open();
+        if (rc < 0) {
+            return false;
+        }
+
+        keymaster_session_t session = (keymaster_session_t)rc;
+
+        uint8_t* key = nullptr;
+        uint32_t local_length = 0;
+
+        rc = keymaster_get_auth_token_key(session, &key, &local_length);
+        keymaster_close(session);
+
+        if (rc == NO_ERROR) {
+            cached_auth_token_key_.reset(key);
+            cached_auth_token_key_len_ = local_length;
+        } else {
+            return false;
+        }
     }
 
-    keymaster_session_t session = (keymaster_session_t) rc;
+    *auth_token_key = cached_auth_token_key_.get();
+    *length = cached_auth_token_key_len_;
 
-    uint8_t *key = NULL;
-    size_t local_length = 0;
-
-    rc = keymaster_get_auth_token_key(session, &key, &local_length);
-    keymaster_close(session);
-
-    if (rc == NO_ERROR) {
-        *auth_token_key = key;
-        *length = (uint32_t)local_length;
-        return true;
-    } else {
-        return false;
-    }
+    return true;
 }
 
 void TrustyGateKeeper::GetPasswordKey(const uint8_t **password_key, uint32_t *length) {
